@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="64dp"
+    android:background="#221f35"
+   >
+   <!-- <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        >
+        <ImageView
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:id="@+id/iv_logo"
+            android:layout_centerVertical="true"
+            android:src="@drawable/logo1"
+            />
+        <TextView
+            android:id="@+id/text_view_collapsed_1"
+            style="@style/TextAppearance.Compat.Notification.Title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="New Message!"
+            android:layout_centerVertical="true"
+            android:layout_toRightOf="@+id/iv_logo"
+            android:layout_marginLeft="10dp"
+            android:textColor="@color/colorPink" />
+    </RelativeLayout>-->
+    <TextView
+        android:id="@+id/text_view_collapsed_1"
+        style="@style/TextAppearance.Compat.Notification.Title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="New Message!"
+        android:textColor="@color/colorWhite" />
+    <TextView
+        android:id="@+id/text_view_collapsed_2"
+        style="@style/TextAppearance.Compat.Notification.Info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Expand to show !"
+        android:textColor="@color/colorWhite"
+        android:layout_marginTop="5dp"
+       />
+</LinearLayout>
