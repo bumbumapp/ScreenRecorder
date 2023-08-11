@@ -20,10 +20,10 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.bumbumapps.screenrecorder.Utills.AdsLoader;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
-import com.google.android.gms.ads.InterstitialAd;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.initialization.InitializationStatus;
 import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
@@ -34,12 +34,10 @@ import com.bumbumapps.screenrecorder.Fragment.FragmentMyRecording;
 import com.bumbumapps.screenrecorder.Fragment.FragmentSetting;
 import com.bumbumapps.screenrecorder.R;
 import com.bumbumapps.screenrecorder.Utills.Constance;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 public class ActivityHome extends AppCompatActivity implements View.OnClickListener,BottomNavigationView.OnNavigationItemSelectedListener {
 
@@ -73,12 +71,12 @@ public class ActivityHome extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
-
+        FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(true);
         context = ActivityHome.this;
         check_fragmentname = String.valueOf(getIntent().getStringExtra("check_fragmentname"));
 
         init();
-
+        AdsLoader.displayInterstitial(this);
         MobileAds.initialize(this, new OnInitializationCompleteListener() {
             @Override
             public void onInitializationComplete(InitializationStatus initializationStatus) {

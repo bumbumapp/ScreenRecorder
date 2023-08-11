@@ -1,6 +1,7 @@
 package com.bumbumapps.screenrecorder.Fragment;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -55,15 +56,22 @@ import com.bumbumapps.screenrecorder.R;
 import com.bumbumapps.screenrecorder.Service.FloatingWidgetService;
 import com.bumbumapps.screenrecorder.Service.FloatingWidgetService2;
 import com.bumbumapps.screenrecorder.Service.ImageRecordService;
+import com.bumbumapps.screenrecorder.Utills.AdsLoader;
 import com.bumbumapps.screenrecorder.Utills.Constance;
+import com.bumbumapps.screenrecorder.Utills.Globals;
 import com.bumbumapps.screenrecorder.Utills.MyPreference;
+import com.bumbumapps.screenrecorder.Utills.Timers;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.InterstitialAd;
+import com.google.android.gms.ads.FullScreenContentCallback;
+import com.google.android.gms.ads.interstitial.InterstitialAd;
+import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
+
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.sql.Date;
+import java.sql.Time;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -76,11 +84,12 @@ import java.util.concurrent.TimeUnit;
 
 import static android.app.Activity.RESULT_OK;
 import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
+import static com.bumbumapps.screenrecorder.Utills.AdsLoader.mInterstitialAd;
 
 public class FragmentHome extends Fragment implements HBRecorderListener {
     static Context context;
     View view;
-    private InterstitialAd interstitialAd;
+
     //Notification
     RemoteViews notificationLayoutExpanded;
     private static Notification notification;
@@ -148,8 +157,7 @@ public class FragmentHome extends Fragment implements HBRecorderListener {
         setRecordAudioCheckBoxListener();
         RunNotification();
         getpermission();
-        setUpInterstitialAd();
-//        scheduleInterstitial();
+
 
         if (checkDrawOverlayPermission()) {
             startFloatingWidgetService();
@@ -246,42 +254,30 @@ public class FragmentHome extends Fragment implements HBRecorderListener {
             Log.d("mzmzmzm", "Not notification record clciked");
         }
 
-        interstitialAd.setAdListener(new AdListener() {
-            @Override
-            public void onAdClosed() {
-                // Load the next interstitial.
-                setUpInterstitialAd();
-            }
 
-        });
         return view;
 
 
     }
-    private void setUpInterstitialAd() {
 
-        interstitialAd = new InterstitialAd(context);
-        interstitialAd.setAdUnitId("ca-app-pub-8444865753152507/9775482627");
-        interstitialAd.loadAd(new AdRequest.Builder().build());
-
-
-
-
-    }
 
 
 
     private void displayInterstitial() {
+        if (mInterstitialAd != null) {
+            mInterstitialAd.show(requireActivity());
+            mInterstitialAd.setFullScreenContentCallback(new FullScreenContentCallback() {
+                @Override
+                public void onAdDismissedFullScreenContent() {
+                    AdsLoader.displayInterstitial(context);
+                    Globals.TIMER_FINISHED = false;
+                    Timers.timer().start();
+                }
 
-        if (interstitialAd != null) {
-
-            if (interstitialAd.isLoaded()) {
-                interstitialAd.show();
-            }
+            });
         }
-
-
     }
+
 
 
     //Create Folder

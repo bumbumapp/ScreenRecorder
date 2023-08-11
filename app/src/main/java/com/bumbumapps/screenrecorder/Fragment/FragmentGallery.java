@@ -19,12 +19,12 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 
-import com.google.android.gms.ads.InterstitialAd;
 import com.bumbumapps.screenrecorder.Activities.ActivityHome;
 import com.bumbumapps.screenrecorder.Adapters.AdapterMyGalleryFileList;
 import com.bumbumapps.screenrecorder.Model.ModelMyGallery;
 import com.bumbumapps.screenrecorder.R;
 import com.bumbumapps.screenrecorder.Utills.Constance;
+import com.google.android.gms.ads.interstitial.InterstitialAd;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -40,7 +40,6 @@ public class FragmentGallery extends Fragment {
     public static RelativeLayout rl_screenshotnotfound;
     ArrayList<ModelMyGallery> fileList;
     ArrayList<ModelMyGallery> allFileList;
-    public static InterstitialAd mInterstitialAd;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {

@@ -78,6 +78,11 @@
             android:name="com.bumbumapps.screenrecorder.Service.FloatingWidgetService2"
             android:enabled="true"
             android:exported="false" />
+
+        <meta-data
+            android:name="firebase_crashlytics_collection_enabled"
+            android:value="true" />
+
     </application>
 
 </manifest>

@@ -1,5 +1,6 @@
 apply plugin: 'com.android.application'
-
+apply plugin:  'com.google.gms.google-services'
+apply plugin:  'com.google.firebase.crashlytics'
 android {
     compileSdkVersion 31
     lintOptions{
@@ -9,8 +10,8 @@ android {
         applicationId "com.bumbumapps.screenrecorder"
         minSdkVersion 21
         targetSdkVersion 31
-        versionCode 6
-        versionName "1.0.5"
+        versionCode 7
+        versionName "1.0.6"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -34,11 +35,14 @@ dependencies {
     implementation 'com.google.android.material:material:1.2.1'
 
     implementation 'com.oguzdev:CircularFloatingActionMenu:1.0.2'
-    implementation 'com.google.android.gms:play-services-ads:18.2.0'
+    implementation 'com.google.android.gms:play-services-ads:20.5.0'
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
 
     implementation 'com.github.bumptech.glide:glide:4.9.0'
     implementation 'androidx.cardview:cardview:1.0.0'
-
+    implementation platform('com.google.firebase:firebase-bom:31.2.2')
+    // Add the dependencies for the Crashlytics and Analytics libraries
+    // When using the BoM, you don't specify versions in Firebase library dependencies
+    implementation 'com.google.firebase:firebase-crashlytics-ktx'
 
 }

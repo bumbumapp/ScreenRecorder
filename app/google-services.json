@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "452233131596",
+    "project_id": "screen-recorder-71127",
+    "storage_bucket": "screen-recorder-71127.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:452233131596:android:399eeeb76b10c091e3e6e9",
+        "android_client_info": {
+          "package_name": "com.bumbumapps.screenrecorder"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "452233131596-38pri5s4khvcm9c5kbvjd92608e55ac0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBEla_GDjhQDpaaBWkdJgjeFA8o83altRo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "452233131596-38pri5s4khvcm9c5kbvjd92608e55ac0.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

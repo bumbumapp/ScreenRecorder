@@ -1,5 +1,7 @@
 package com.bumbumapps.screenrecorder.Adapters;
 
+import static com.bumbumapps.screenrecorder.Utills.AdsLoader.mInterstitialAd;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
@@ -24,18 +26,24 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumbumapps.hbrecorder.HBRecorder;
 import com.bumbumapps.screenrecorder.Fragment.FragmentHome;
+import com.bumbumapps.screenrecorder.Utills.AdsLoader;
+import com.bumbumapps.screenrecorder.Utills.Globals;
 import com.bumbumapps.screenrecorder.Utills.MyPreference;
+import com.bumbumapps.screenrecorder.Utills.Timers;
 import com.bumptech.glide.Glide;
 
 import com.bumbumapps.screenrecorder.Fragment.FragmentMyRecording;
 import com.bumbumapps.screenrecorder.R;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.InterstitialAd;
+import com.google.android.gms.ads.FullScreenContentCallback;
+import com.google.android.gms.ads.interstitial.InterstitialAd;
+
 
 import java.io.File;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Timer;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -45,7 +53,7 @@ public class AdapterMyVideoFileList extends RecyclerView.Adapter<AdapterMyVideoF
     private Context context;
     private ArrayList<File> fileArrayList;
     File fileItem;
-    private InterstitialAd interstitialAd;
+
     private MyPreference myPreference;
 
     public AdapterMyVideoFileList(Context context, ArrayList<File> files) {
@@ -68,7 +76,7 @@ public class AdapterMyVideoFileList extends RecyclerView.Adapter<AdapterMyVideoF
     public void onBindViewHolder(@NonNull final AdapterMyVideoFileList.ViewHolder viewHolder, final int position) {
         fileItem = fileArrayList.get(position);
        myPreference=new MyPreference(context);
-       scheduleInterstitial();
+
 
         final String urlpath = fileItem.getAbsolutePath();
         final String filename = fileItem.getName();
@@ -134,22 +142,20 @@ public class AdapterMyVideoFileList extends RecyclerView.Adapter<AdapterMyVideoF
             @Override
             public void onClick(View view) {
                 if (!myPreference.isBoolean()){
-                    if (interstitialAd != null) {
-
-                        if (interstitialAd.isLoaded()) {
-                            interstitialAd.show();
-                        }
-                        interstitialAd.setAdListener(new AdListener(){
+                    if (mInterstitialAd != null && Globals.TIMER_FINISHED) {
+                        mInterstitialAd.show((Activity) viewHolder.itemView.getContext());
+                        mInterstitialAd.setFullScreenContentCallback(new FullScreenContentCallback(){
                             @Override
-                            public void onAdClosed() {
-                                super.onAdClosed();
+                            public void onAdDismissedFullScreenContent() {
                                 Intent intent = new Intent(Intent.ACTION_VIEW);
                                 Uri uri = Uri.parse(urlpath);
                                 intent.setDataAndType(uri, "video/*");
                                 context.startActivity(intent);
-                                scheduleInterstitial();
-
+                                Globals.TIMER_FINISHED = false;
+                                Timers.timer().start();
+                                AdsLoader.displayInterstitial(viewHolder.itemView.getContext());
                             }
+
                         });
                     }else{
                         Intent intent = new Intent(Intent.ACTION_VIEW);
@@ -172,38 +178,9 @@ public class AdapterMyVideoFileList extends RecyclerView.Adapter<AdapterMyVideoF
 
 
       }
-    private void scheduleInterstitial() {
-
-        ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-
-        scheduler.scheduleAtFixedRate(new Runnable() {
-            @Override
-            public void run() {
-
-                ((Activity)context).runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-
-                    setUpInterstitialAd();
-
-                    }
-                });
-
-            }
-        }, 1, 3, TimeUnit.MINUTES);
-
-    }
-
-    private void setUpInterstitialAd() {
-
-        interstitialAd = new InterstitialAd(context);
-        interstitialAd.setAdUnitId("ca-app-pub-8444865753152507/9775482627");
-        interstitialAd.loadAd(new AdRequest.Builder().build());
 
 
 
-
-    }
     public static void shareVideo(Context context, String filePath) {
         Uri mainUri = Uri.parse(filePath);
         Intent sharingIntent = new Intent(Intent.ACTION_SEND);
