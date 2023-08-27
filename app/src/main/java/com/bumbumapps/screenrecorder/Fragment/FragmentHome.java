@@ -85,6 +85,7 @@ import java.util.concurrent.TimeUnit;
 import static android.app.Activity.RESULT_OK;
 import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
 import static com.bumbumapps.screenrecorder.Utills.AdsLoader.mInterstitialAd;
+import static com.bumbumapps.screenrecorder.Utills.Globals.PERMISSIONS;
 
 public class FragmentHome extends Fragment implements HBRecorderListener {
     static Context context;
@@ -319,7 +320,7 @@ public class FragmentHome extends Fragment implements HBRecorderListener {
     public void performclickstartbtn() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             //first check if permissions was granted
-            if (checkSelfPermission(Manifest.permission.RECORD_AUDIO, PERMISSION_REQ_ID_RECORD_AUDIO) && checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, PERMISSION_REQ_ID_WRITE_EXTERNAL_STORAGE)) {
+            if (checkSelfPermission(Manifest.permission.RECORD_AUDIO, PERMISSION_REQ_ID_RECORD_AUDIO) && checkSelfPermission(PERMISSIONS, PERMISSION_REQ_ID_WRITE_EXTERNAL_STORAGE)) {
                 hasPermissions = true;
 
                 if (hasPermissions) {
@@ -707,7 +708,7 @@ public class FragmentHome extends Fragment implements HBRecorderListener {
         switch (requestCode) {
             case PERMISSION_REQ_ID_RECORD_AUDIO:
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, PERMISSION_REQ_ID_WRITE_EXTERNAL_STORAGE);
+                    checkSelfPermission(PERMISSIONS, PERMISSION_REQ_ID_WRITE_EXTERNAL_STORAGE);
                 } else {
                     hasPermissions = false;
                     showLongToast("No permission for " + Manifest.permission.RECORD_AUDIO);
@@ -723,14 +724,14 @@ public class FragmentHome extends Fragment implements HBRecorderListener {
                     }*/
                 } else {
                     hasPermissions = false;
-                    showLongToast("No permission for " + Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                    showLongToast("No permission for " + PERMISSIONS);
                 }
                 break;
             case REQUEST_PERMISSIONS:
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     createscreenshotfolder();
                 } else {
-                    showLongToast("No permission for " + Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                    showLongToast("No permission for " + PERMISSIONS);
                 }
                 break;
             default:
@@ -759,10 +760,7 @@ public class FragmentHome extends Fragment implements HBRecorderListener {
                             context.startService(new Intent(context, FloatingWidgetService2.class));
                         }
                     }
-                  /*  if (checkDrawOverlayPermission()) {
-                        context.stopService(new Intent(context, FloatingWidgetService.class));
-                        context.startService(new Intent(context, FloatingWidgetService2.class));
-                    }*/
+
                     startbtn.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_close));
 
                 } else {
@@ -782,26 +780,7 @@ public class FragmentHome extends Fragment implements HBRecorderListener {
                 }
             }
             if (requestCode == DRAW_OVER_OTHER_APP_PERMISSION_REQUEST_CODE) {
-              /*  Log.d("DRAW_OVER","DRAW_OVER"+resultCode);
-                //Check if the permission is granted or not.
-                if (resultCode == RESULT_OK)
-                {
-                    Log.d("DRAW_OVER","DRAW_OVER_if"+resultCode);
 
-                    Log.d("DRAW_OVER","if");
-                    //If permission granted start floating widget service
-                    startFloatingWidgetService();
-
-                }
-                else{
-                    Log.d("DRAW_OVER","DRAW_OVER_else"+resultCode);
-
-                    Log.d("DRAW_OVER","false");
-
-                    //Permission is not available then display toast
-                    showLongToast(getResources().getString(R.string.draw_other_app_permission_denied));
-
-                }*/
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     if (Settings.canDrawOverlays(context)) {
@@ -932,8 +911,6 @@ public class FragmentHome extends Fragment implements HBRecorderListener {
             //Scrennshot btn clicked
             Intent ScrennshotIntent = new Intent(context, ActivityMediaProjectionPermission.class);
             ScrennshotIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-            //  ScrennshotIntent.setAction("Scrennshot_intent");
-            // ScrennshotIntent.addCategory(Intent.CATEGORY_LAUNCHER);
             PendingIntent ScrennshotpendingIntent = PendingIntent.getActivity(context, 0, ScrennshotIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
             notificationLayoutExpanded.setOnClickPendingIntent(com.bumbumapps.hbrecorder.R.id.ll_screenshot, ScrennshotpendingIntent);
 
@@ -992,7 +969,7 @@ public class FragmentHome extends Fragment implements HBRecorderListener {
 
 
     public void startScreenShot() {
-        if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, PERMISSION_REQ_ID_WRITE_EXTERNAL_STORAGE)) {
+        if (checkSelfPermission(PERMISSIONS, PERMISSION_REQ_ID_WRITE_EXTERNAL_STORAGE)) {
             hasPermissions = true;
             if (hasPermissions) {
                 MediaProjectionManager mProjectionManager =
@@ -1018,20 +995,36 @@ public class FragmentHome extends Fragment implements HBRecorderListener {
     }
 
     public void getpermission() {
-        if (( ContextCompat.checkSelfPermission(context,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ) && ( ContextCompat.checkSelfPermission(context,
-                Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED )) {
-            if (( ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE) ) && ( ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
-                    Manifest.permission.READ_EXTERNAL_STORAGE) )) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if ((ContextCompat.checkSelfPermission(context,
+                    PERMISSIONS) != PackageManager.PERMISSION_GRANTED) && (ContextCompat.checkSelfPermission(context,
+                    Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)) {
+                if ((ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
+                        PERMISSIONS)) && (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
+                        Manifest.permission.READ_EXTERNAL_STORAGE))) {
 
+                } else {
+                    ActivityCompat.requestPermissions(getActivity(),
+                            new String[]{PERMISSIONS, Manifest.permission.READ_EXTERNAL_STORAGE},
+                            REQUEST_PERMISSIONS);
+                }
             } else {
-                ActivityCompat.requestPermissions(getActivity(),
-                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE},
-                        REQUEST_PERMISSIONS);
+                createscreenshotfolder();
             }
-        } else {
-            createscreenshotfolder();
+        }else{
+            if ((ContextCompat.checkSelfPermission(context,
+                    PERMISSIONS) != PackageManager.PERMISSION_GRANTED)) {
+                if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
+                        PERMISSIONS)) {
+
+                } else {
+                    ActivityCompat.requestPermissions(getActivity(),
+                            new String[]{PERMISSIONS},
+                            REQUEST_PERMISSIONS);
+                }
+            } else {
+                createscreenshotfolder();
+            }
         }
     }
 

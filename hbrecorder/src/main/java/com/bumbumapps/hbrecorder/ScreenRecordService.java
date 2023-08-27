@@ -490,104 +490,7 @@ public class ScreenRecordService extends Service {
             notificationDescription = "Drag down to stop the recording";
         }
 
-        /*//Notification
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            String channelId = "001";
-            String channelName = "RecordChannel";
-            NotificationChannel channel = new NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_NONE);
-            channel.setLightColor(Color.BLUE);
-            channel.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
-            manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-            if (manager != null) {
-                manager.createNotificationChannel(channel);
-                RemoteViews collapsedView = new RemoteViews(getPackageName(), R.layout.notification_collapsed);
-                collapsedView.setTextViewText(R.id.text_view_collapsed_1, "Screen Recorder");
-                RemoteViews notificationLayoutExpanded;
-                if (mediarunning) {
-                    notificationLayoutExpanded = new RemoteViews(getPackageName(), R.layout.notification_large2);
-                    //stop btn clicked
-                    Intent stopIntent = new Intent(this, NotificationReceiver.class);
-                    stopIntent.setAction("STOP_ACTION");
-                    //  PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, myIntent, 0);
-                    PendingIntent stoppendingIntent = PendingIntent.getBroadcast(this, 0, stopIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-                    notificationLayoutExpanded.setOnClickPendingIntent(R.id.ll_stopbtn, stoppendingIntent);
 
-                    //Pause btn clicked
-                    Intent pauseIntent = new Intent(this, NotificationReceiver.class);
-                    pauseIntent.setAction("Pause_ACTION");
-                    PendingIntent pausependingIntent = PendingIntent.getBroadcast(this, 0, pauseIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-                    notificationLayoutExpanded.setOnClickPendingIntent(R.id.ll_pausebtn, pausependingIntent);
-                    //resume btn clicked
-                    Intent resumeIntent = new Intent(this, NotificationReceiver.class);
-                    resumeIntent.setAction("Resume_ACTION");
-                    PendingIntent resumependingIntent = PendingIntent.getBroadcast(this, 0, resumeIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-                    notificationLayoutExpanded.setOnClickPendingIntent(R.id.ll_resume, resumependingIntent);
-
-                }
-                else {
-                    mediarunning = false;
-                    notificationLayoutExpanded = new RemoteViews(getPackageName(), R.layout.notification_large);
-                    //home btn clicked
-                    Intent homeIntent = new Intent(this, NotificationReceiver.class);
-                    homeIntent.setAction("Home_ACTION");
-                    //  PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, myIntent, 0);
-                    PendingIntent homependingIntent = PendingIntent.getBroadcast(this, 0, homeIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-                    notificationLayoutExpanded.setOnClickPendingIntent(R.id.ll_notification_home, homependingIntent);
-
-                    //exit btn clicked
-                    Intent exitIntent = new Intent(this, NotificationReceiver.class);
-                    exitIntent.setAction("Exit_ACTION");
-                    PendingIntent exitpendingIntent = PendingIntent.getBroadcast(this, 0, exitIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-                    notificationLayoutExpanded.setOnClickPendingIntent(R.id.ll_notification_exit, exitpendingIntent);
-
-
-                }
-
-                 *//* Notification.Action action = new Notification.Action.Builder(
-                            Icon.createWithResource(this, android.R.drawable.presence_video_online),
-                            notificationButtonText,
-                            pendingIntent).build();*//*
-                if (notificationSmallIcon != null) {
-                    Bitmap bmp = BitmapFactory.decodeByteArray(notificationSmallIcon, 0, notificationSmallIcon.length);
-                    //Modify notification badge
-                    Log.d("ajajaja", "if");
-                    //  notification = new Notification.Builder(getApplicationContext(), channelId).setOngoing(true).setSmallIcon(Icon.createWithBitmap(bmp)).setContentTitle(notificationTitle).setContentText(notificationDescription).addAction(action).setCustomBigContentView(notificationLayoutExpanded).build();
-                    notification = new Notification.Builder(getApplicationContext(), channelId).setOngoing(true).setSmallIcon(Icon.createWithBitmap(bmp)).setContentTitle(notificationTitle).setContentText(notificationDescription).setCustomBigContentView(notificationLayoutExpanded).build();
-                    // notification = new Notification.Builder(getApplicationContext(), channelId).setOngoing(true).setSmallIcon(Icon.createWithBitmap(bmp)).setContentTitle(notificationTitle).setCustomContentView(collapsedView).setCustomBigContentView(notificationLayoutExpanded).build();
-
-                } else {
-                    Log.d("ajajaja", "else");
-                    //Modify notification badge
-                    notification = new Notification.Builder(getApplicationContext(), channelId)
-                            .setSmallIcon(R.drawable.logo1)
-                            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                            .setCustomContentView(collapsedView)
-                            .setCustomBigContentView(notificationLayoutExpanded)
-                            .setAutoCancel(true)
-                            *//*.setAutoCancel(false)
-                            .setOngoing(true)*//*
-                            .build();
-                    // notification = new Notification.Builder(getApplicationContext(), channelId).setOngoing(true).setSmallIcon(R.drawable.icon).setContentTitle(notificationTitle).setContentText(notificationDescription).addAction(action).build();
-                }
-
-                startForeground(101, notification);
-
-            }
-        }
-        else {
-            startForeground(101, new Notification());
-        }*/
-      /*  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-
-            Notification.Builder builder = new Notification.Builder(this, "001")
-                    .setContentTitle(getString(R.string.app_name))
-                    .setContentText("hghg")
-                    .setAutoCancel(true);
-
-            Notification notification = builder.build();
-            startForeground(1, notification);
-
-        }*/
         // create notification
         Pair<Integer, Notification> notification = NotificationUtils.getNotification(this);
         startForeground(notification.first, notification.second);
@@ -614,10 +517,7 @@ public class ScreenRecordService extends Service {
         }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     public static void callOnClickStop() {
-      /*  resetAll();
-        callOnComplete();*/
         ResultReceiver receiver = mIntent.getParcelableExtra(ScreenRecordService.BUNDLED_LISTENER);
         Bundle bundle = new Bundle();
         bundle.putString("Stop_action_perform", "Stop_action_perform was passed");

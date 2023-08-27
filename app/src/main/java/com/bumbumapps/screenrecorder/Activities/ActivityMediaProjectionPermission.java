@@ -22,13 +22,14 @@ public class ActivityMediaProjectionPermission extends Activity {
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-      //  setContentView(R.layout.demo_mediaprojection);
         context = ActivityMediaProjectionPermission.this;
         activity = this;
 
         mgr = (MediaProjectionManager) getSystemService(MEDIA_PROJECTION_SERVICE);
         startActivityForResult(mgr.createScreenCaptureIntent(),
                 REQUEST_SCREENSHOT);
+        Log.d("IMAGE SAVED","IMAGE SAVED onActivityResult1");
+
 
     }
 
@@ -38,6 +39,7 @@ public class ActivityMediaProjectionPermission extends Activity {
             if (requestCode == REQUEST_SCREENSHOT) {
                 if (resultCode == RESULT_OK) {
                     Log.d("servicecheck", "RESULT_OK");
+                    Log.d("IMAGE SAVED","IMAGE SAVED onActivityResult");
                     startService(ImageRecordService.getStartIntent(context, resultCode, data, Constance.pathScreenShotDirectory));
 
                 }

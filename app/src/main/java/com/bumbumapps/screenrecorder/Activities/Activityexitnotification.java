@@ -17,7 +17,7 @@ public class Activityexitnotification extends Activity {
         super.onCreate(savedInstanceState);
         context = Activityexitnotification.this;
 
-       // FragmentHome.exitNotificationclick();
+
         FragmentHome.notificationManager.cancel(NotificationID);
         FragmentHome.notificationManager.cancelAll();
         finish();

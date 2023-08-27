@@ -1,10 +1,15 @@
 package com.bumbumapps.screenrecorder.Activities;
 
+import static com.bumbumapps.screenrecorder.Utills.Globals.PERMISSIONS;
+
+import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -16,6 +21,7 @@ import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -95,7 +101,11 @@ public class ActivityHome extends AppCompatActivity implements View.OnClickListe
         loadFragment(new FragmentHome());
 
 
-
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU){
+            if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, 500);
+            }
+        }
 
         if (check_fragmentname.equals("fragment_myrecording")) {
             loadFragment(new FragmentMyRecording());
@@ -123,10 +133,8 @@ public class ActivityHome extends AppCompatActivity implements View.OnClickListe
         FragmentManager fragmentManager = getSupportFragmentManager();
         fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.main_framelayout, fragment);
-        //fragmentTransaction.addToBackStack(null);
         fragmentTransaction.hide(fragment);
         fragmentTransaction.show(fragment);
-        //fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
         fragmentTransaction.commit();
     }
 
@@ -155,16 +163,12 @@ public class ActivityHome extends AppCompatActivity implements View.OnClickListe
 
     public void stopTask() {
         if (hourlyTask != null) {
-
-            Log.d("TIMER", "timer canceled");
             hourlyTask.cancel();
         }
     }
 
     @Override
     public void onBackPressed() {
-
-
             final android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(new ContextThemeWrapper(this,R.style.AlertDialogCustom));
             final AlertDialog alertDialog = builder.create();
             builder.setMessage("Are you sure you want to exit?")
@@ -209,13 +213,10 @@ public class ActivityHome extends AppCompatActivity implements View.OnClickListe
 
     private void checkAction(Intent intent) {
         String action = intent.getAction();
-        Log.d("mxmxmxm", "action: " + action);
         switch (action) {
             case "record_intent":
                 Constance.notificationrecordclick=true;
                 loadFragment(new FragmentHome());
-                Log.d("mxmxmxm", "record_intent");
-                // FragmentHome.exitNotificationclick();
                 break;
 
         }
@@ -229,32 +230,16 @@ public class ActivityHome extends AppCompatActivity implements View.OnClickListe
 
             case R.id.home:
                 loadFragment(new FragmentHome());
-
-
                 return true;
             case R.id.record:
-
-
                 loadFragment(new FragmentMyRecording());
-
-
                 return true;
             case R.id.screenshot:
-
                 loadFragment(new FragmentGallery());
-
-
                 return true;
 
             case R.id.settings:
-
-
-                // startActivity(new Intent(context, SettingsActivity.class));
                 loadFragment(new FragmentSetting());
-
-
-
-
                 return true;
 
             default:

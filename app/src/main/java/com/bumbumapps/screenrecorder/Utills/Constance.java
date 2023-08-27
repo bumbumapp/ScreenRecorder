@@ -33,6 +33,6 @@ public class Constance {
 
     // public static File FileDirectory = Environment.getExternalStoragePublicDirectory("Screen Recorder" + "/");
     public static String PathFileDirectory=Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES) + "/Screen Recorder";
-    public static String pathScreenShotDirectory=Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES).getAbsolutePath()+"/DemoScreenShots/";
+    public static String pathScreenShotDirectory=Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM)+"/DemoScreenShots/";
 
 }

@@ -90,13 +90,14 @@ public class ImageRecordService extends Service {
     }
 
     private static int getVirtualDisplayFlags() {
-        //return DisplayManager.VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY | DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC;
         return DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR;
     }
 
     private class ImageAvailableListener implements ImageReader.OnImageAvailableListener {
         @Override
         public void onImageAvailable(ImageReader reader) {
+            Log.d("IMAGE SAVED", "IMAGE SAVED not null image" + "image");
+
             Image image = null;
             FileOutputStream fos = null;
             bitmap = null;
@@ -112,11 +113,7 @@ public class ImageRecordService extends Service {
                     int pixelStride = planes[0].getPixelStride();
                     int rowStride = planes[0].getRowStride();
                     int rowPadding = rowStride - pixelStride * mWidth;
-/*   bitmap = Bitmap.createBitmap(mWidth + (int) ((float) rowPadding / (float) pixelStride), mHeight, Bitmap.Config.ARGB_8888);
-
-                    bitmap.copyPixelsFromBuffer(buffer);
-*/
-                    // create bitmap
+                    Log.d("IMAGE SAVED","IMAGE SAVED onImageAvailable");
                     bitmap = Bitmap.createBitmap(mWidth + rowPadding / pixelStride, mHeight, Bitmap.Config.ARGB_8888);
                     Log.d("servicecheck", "not null image bitmap " + bitmap);
                     bitmap.copyPixelsFromBuffer(buffer);
@@ -143,17 +140,16 @@ public class ImageRecordService extends Service {
                     Log.d("servicecheck", "storeDirectory 2 " + storeDirectory.getAbsolutePath());
 
                     //  fos = new FileOutputStream(mStoreDir + "/myscreen_" + IMAGES_PRODUCED + ".png");
-                    fos = new FileOutputStream(storeDirectory.getAbsolutePath() + "/myscreen_" + Calendar.getInstance().getTime() + ".png");
+                    String  time =String.valueOf(System.currentTimeMillis()).replaceAll(":", ".");
+                    fos = new FileOutputStream(storeDirectory.getAbsolutePath() + "/myscreen_" + time + ".png");
                     croppedBitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
                     Log.d("servicecheck", "fos" + fos);
 
                     Log.d("servicecheck", "not null image  last bitmap 2" + bitmap);
 
-                    //IMAGES_PRODUCED++;
-                    //  Log.e(TAG, "captured image: " + IMAGES_PRODUCED);
+
                     fos.flush();
                     fos.close();
-                    // Toast.makeText(getApplicationContext(), "Screenshot captured", Toast.LENGTH_LONG).show();
                     stopProjection();
                     stopSelf();
                     scanFile(getApplicationContext(), Uri.fromFile(storeDirectory));
@@ -168,77 +164,17 @@ public class ImageRecordService extends Service {
                 if (bitmap != null) {
                     bitmap.recycle();
                 }
+                Log.d("IMAGE SAVED","IMAGE SAVED " +e.getMessage());
+
                 e.printStackTrace();
             }
-           /* if (image != null)
-                image.close();
-            reader.close();
-*/
-          /*  finally {
-                if (fos != null) {
-                    try {
-                        fos.flush();
-                        fos.close();
-                        stopProjection();
-                        stopSelf();
-                        scanFile(getApplicationContext(), Uri.fromFile(storeDirectory));
 
-                    } catch (IOException ioe) {
-                        ioe.printStackTrace();
-                    }
-                }
-
-             */   /*
-
-            }*/
 
 
         }
     }
 
-/*
-    private class OrientationChangeCallback extends OrientationEventListener {
 
-        OrientationChangeCallback(Context context) {
-            super(context);
-        }
-
-        @Override
-        public void onOrientationChanged(int orientation) {
-            final int rotation = mDisplay.getRotation();
-            if (rotation != mRotation) {
-                mRotation = rotation;
-                try {
-                    // clean up
-                    if (mVirtualDisplay != null) mVirtualDisplay.release();
-                    if (mImageReader != null) mImageReader.setOnImageAvailableListener(null, null);
-
-                    // re-create virtual display depending on device width / height
-                    createVirtualDisplay();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
-*/
-
-    /*  private class MediaProjectionStopCallback extends MediaProjection.Callback {
-          @Override
-          public void onStop() {
-              Log.e(TAG, "stopping projection.");
-              mHandler.post(new Runnable() {
-                  @Override
-                  public void run() {
-                      if (mVirtualDisplay != null) mVirtualDisplay.release();
-                      if (mImageReader != null) mImageReader.setOnImageAvailableListener(null, null);
-                      if (mOrientationChangeCallback != null) mOrientationChangeCallback.disable();
-                      mMediaProjection.unregisterCallback(MediaProjectionStopCallback.this);
-                  }
-              });
-          }
-      }
-  */
     @Override
     public IBinder onBind(Intent intent) {
         return null;
@@ -280,11 +216,7 @@ public class ImageRecordService extends Service {
         } else {
             stopSelf();
         }
-     /*   Pair<Integer, Notification> notification = NotificationUtils.getNotification(this);
-        startForeground(notification.first, notification.second);
 
-        mStoreDir = Constance.pathScreenShotDirectory;
-        startProjection(Result_Code,Data);*/
         return START_NOT_STICKY;
     }
 
@@ -314,15 +246,7 @@ public class ImageRecordService extends Service {
                 // create virtual display depending on device width / height
                 createVirtualDisplay();
 
-              /*  // register orientation change callback
-                mOrientationChangeCallback = new OrientationChangeCallback(this);
-                if (mOrientationChangeCallback.canDetectOrientation()) {
-                    mOrientationChangeCallback.enable();
-                }
 
-                // register media projection stop callback
-                mMediaProjection.registerCallback(new MediaProjectionStopCallback(), mHandler);
-      */
             } else {
                 Log.d("media_projection_check", " mediaprojection null");
             }
@@ -330,16 +254,6 @@ public class ImageRecordService extends Service {
     }
 
     private void stopProjection() {
-      /*  if (mHandler != null) {
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    if (mMediaProjection != null) {
-                        mMediaProjection.stop();
-                    }
-                }
-            });
-        }*/
 
         if (mMediaProjection != null) {
             mMediaProjection.stop();
@@ -352,21 +266,17 @@ public class ImageRecordService extends Service {
 
     @SuppressLint("WrongConstant")
     private void createVirtualDisplay() {
-        // get width and height
-      /*  mWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
-        mHeight = Resources.getSystem().getDisplayMetrics().heightPixels;
-        Log.d("servicecheck", "createVirtualDisplay");
-*/
-
-        // start capture reader
 
         mImageReader = ImageReader.newInstance(mWidth, mHeight, PixelFormat.RGBA_8888, 1);
         mVirtualDisplay = mMediaProjection.createVirtualDisplay(SCREENCAP_NAME, mWidth, mHeight,
                 mDensity, getVirtualDisplayFlags(), mImageReader.getSurface(), null, null);
         mImageReader.setOnImageAvailableListener(new ImageAvailableListener(), null);
+        Log.d("IMAGE SAVED","createVirtualDisplay");
+
     }
 
     private static void scanFile(Context context, Uri imageUri) {
+        Log.d("IMAGE SAVED","IMAGE SAVED SCAN FILE");
         Intent scanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
         scanIntent.setData(imageUri);
         context.sendBroadcast(scanIntent);

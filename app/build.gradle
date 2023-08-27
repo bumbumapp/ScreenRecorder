@@ -2,16 +2,16 @@ apply plugin: 'com.android.application'
 apply plugin:  'com.google.gms.google-services'
 apply plugin:  'com.google.firebase.crashlytics'
 android {
-    compileSdkVersion 31
+    compileSdkVersion 33
     lintOptions{
         checkReleaseBuilds false
     }
     defaultConfig {
         applicationId "com.bumbumapps.screenrecorder"
         minSdkVersion 21
-        targetSdkVersion 31
-        versionCode 7
-        versionName "1.0.6"
+        targetSdkVersion 33
+        versionCode 8
+        versionName "1.0.7"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
