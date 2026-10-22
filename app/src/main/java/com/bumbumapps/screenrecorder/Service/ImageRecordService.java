@@ -18,6 +18,8 @@ import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
 import android.net.Uri;
 import android.os.Handler;
+import android.os.Looper;
+import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.Display;
@@ -82,11 +84,11 @@ public class ImageRecordService extends Service {
                  && intent.hasExtra(ACTION) && Objects.equals(intent.getStringExtra(ACTION), START);
      } */
     private static boolean isStartCommand(Intent intent) {
-        return intent.hasExtra(RESULT_CODE) && intent.hasExtra(DATA);
+        return intent != null && intent.hasExtra(RESULT_CODE) && intent.hasExtra(DATA);
     }
 
     private static boolean isStopCommand(Intent intent) {
-        return intent.hasExtra(ACTION) && Objects.equals(intent.getStringExtra(ACTION), STOP);
+        return intent != null && intent.hasExtra(ACTION) && Objects.equals(intent.getStringExtra(ACTION), STOP);
     }
 
     private static int getVirtualDisplayFlags() {
@@ -202,12 +204,17 @@ public class ImageRecordService extends Service {
         if (isStartCommand(intent)) {
             // create notification
             Pair<Integer, Notification> notification = NotificationUtils.getNotification(this);
-            startForeground(notification.first, notification.second);
+            androidx.core.app.ServiceCompat.startForeground(this, notification.first, notification.second,
+                    Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
+                            ? android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION : 0);
             int resultCode = intent.getIntExtra(RESULT_CODE, Activity.RESULT_CANCELED);
             Intent data = intent.getParcelableExtra(DATA);
             mStoreDir = intent.getStringExtra("path_directory");
             Log.d("servicecheck", "isStartCommand");
-            ActivityMediaProjectionPermission.activity.finish();
+            // The permission activity is only set when started from the floating widget.
+            if (ActivityMediaProjectionPermission.activity != null) {
+                ActivityMediaProjectionPermission.activity.finish();
+            }
             startProjection(resultCode, data);
 
         } else if (isStopCommand(intent)) {
@@ -230,9 +237,16 @@ public class ImageRecordService extends Service {
             Log.d("servicecheck", "resultCode" + resultCode);
             Log.d("servicecheck", "data" + data);
 
-            mMediaProjection = mpManager.getMediaProjection(resultCode, data);
+            mMediaProjection = data == null ? null : mpManager.getMediaProjection(resultCode, data);
 
             if (mMediaProjection != null) {
+                // Android 14+: a callback must be registered before createVirtualDisplay().
+                mMediaProjection.registerCallback(new MediaProjection.Callback() {
+                    @Override
+                    public void onStop() {
+                        stopSelf();
+                    }
+                }, new Handler(Looper.getMainLooper()));
                 // display metrics
                 mDensity = Resources.getSystem().getDisplayMetrics().densityDpi;
                 WindowManager windowManager = (WindowManager) getSystemService(Context.WINDOW_SERVICE);

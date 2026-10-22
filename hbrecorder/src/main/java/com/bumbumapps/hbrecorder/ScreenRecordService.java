@@ -80,6 +80,11 @@ public class ScreenRecordService extends Service {
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     public int onStartCommand(final Intent intent, int flags, int startId) {
+        if (intent == null) {
+            // Restarted by the system after process death: the MediaProjection token is gone.
+            stopSelf();
+            return Service.START_NOT_STICKY;
+        }
         String pauseResumeAction = intent.getAction();
         //Pause Recording
         if (pauseResumeAction != null && pauseResumeAction.equals("pause")) {
@@ -100,8 +105,8 @@ public class ScreenRecordService extends Service {
             startmediarecorder(intent);
 
         }
-        return Service.START_STICKY;
-       // return Service.START_REDELIVER_INTENT ;
+        // A projection cannot be restored after a restart, so never ask to be restarted.
+        return Service.START_NOT_STICKY;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -298,6 +303,15 @@ public class ScreenRecordService extends Service {
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     private void initMediaProjection() {
         mMediaProjection = ( (MediaProjectionManager) Objects.requireNonNull(getSystemService(Context.MEDIA_PROJECTION_SERVICE)) ).getMediaProjection(mResultCode, mResultData);
+        if (mMediaProjection != null) {
+            // Android 14+: a callback must be registered before createVirtualDisplay().
+            mMediaProjection.registerCallback(new MediaProjection.Callback() {
+                @Override
+                public void onStop() {
+                    stopSelf();
+                }
+            }, new android.os.Handler(android.os.Looper.getMainLooper()));
+        }
     }
 
     //Return the output file path as string
@@ -355,7 +369,7 @@ public class ScreenRecordService extends Service {
                 FileDescriptor inputPFD = Objects.requireNonNull(contentResolver.openFileDescriptor(returnedUri, "rw")).getFileDescriptor();
                 mMediaRecorder.setOutputFile(inputPFD);
             } catch (Exception e) {
-                ResultReceiver receiver = mIntent.getParcelableExtra(ScreenRecordService.BUNDLED_LISTENER);
+                ResultReceiver receiver = mIntent == null ? null : mIntent.getParcelableExtra(ScreenRecordService.BUNDLED_LISTENER);
                 Bundle bundle = new Bundle();
                 bundle.putString("errorReason", Log.getStackTraceString(e));
                 if (receiver != null) {
@@ -400,7 +414,10 @@ public class ScreenRecordService extends Service {
 
 
     private static void callOnComplete() {
-        ResultReceiver receiver = mIntent.getParcelableExtra(ScreenRecordService.BUNDLED_LISTENER);
+        if (mIntent == null) {
+            return;
+        }
+        ResultReceiver receiver = mIntent == null ? null : mIntent.getParcelableExtra(ScreenRecordService.BUNDLED_LISTENER);
         Bundle bundle = new Bundle();
         bundle.putString("onComplete", "Uri was passed");
         if (receiver != null) {
@@ -409,7 +426,7 @@ public class ScreenRecordService extends Service {
     }
 
     public static void callOnClickHome() {
-        ResultReceiver receiver = mIntent.getParcelableExtra(ScreenRecordService.BUNDLED_LISTENER);
+        ResultReceiver receiver = mIntent == null ? null : mIntent.getParcelableExtra(ScreenRecordService.BUNDLED_LISTENER);
         Bundle bundle = new Bundle();
         bundle.putString("Home_action_perform", "Home_action_perform was passed");
         if (receiver != null) {
@@ -493,7 +510,15 @@ public class ScreenRecordService extends Service {
 
         // create notification
         Pair<Integer, Notification> notification = NotificationUtils.getNotification(this);
-        startForeground(notification.first, notification.second);
+        int types = 0;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            types = android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION;
+            if (isAudioEnabled && androidx.core.content.ContextCompat.checkSelfPermission(this,
+                    android.Manifest.permission.RECORD_AUDIO) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                types |= android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE;
+            }
+        }
+        androidx.core.app.ServiceCompat.startForeground(this, notification.first, notification.second, types);
 
         if (returnedUri == null) {
             if (path == null) {
@@ -504,12 +529,14 @@ public class ScreenRecordService extends Service {
     }
 
     public static void callOnClickExit() {
-        manager.cancelAll();
-        manager.notify();
+        // Object.notify() without holding the monitor threw IllegalMonitorStateException.
+        if (manager != null) {
+            manager.cancelAll();
+        }
     }
 
     public static void callOnClickPause() {
-        ResultReceiver receiver = mIntent.getParcelableExtra(ScreenRecordService.BUNDLED_LISTENER);
+        ResultReceiver receiver = mIntent == null ? null : mIntent.getParcelableExtra(ScreenRecordService.BUNDLED_LISTENER);
         Bundle bundle = new Bundle();
         bundle.putString("Pause_action_perform", "Pause_action_perform was passed");
         if (receiver != null) {
@@ -518,7 +545,7 @@ public class ScreenRecordService extends Service {
     }
 
     public static void callOnClickStop() {
-        ResultReceiver receiver = mIntent.getParcelableExtra(ScreenRecordService.BUNDLED_LISTENER);
+        ResultReceiver receiver = mIntent == null ? null : mIntent.getParcelableExtra(ScreenRecordService.BUNDLED_LISTENER);
         Bundle bundle = new Bundle();
         bundle.putString("Stop_action_perform", "Stop_action_perform was passed");
         if (receiver != null) {
@@ -528,7 +555,7 @@ public class ScreenRecordService extends Service {
     }
 
     public static void callOnClickResume() {
-        ResultReceiver receiver = mIntent.getParcelableExtra(ScreenRecordService.BUNDLED_LISTENER);
+        ResultReceiver receiver = mIntent == null ? null : mIntent.getParcelableExtra(ScreenRecordService.BUNDLED_LISTENER);
         Bundle bundle = new Bundle();
         bundle.putString("Resume_action_perform", "Resume_action_perform was passed");
         if (receiver != null) {

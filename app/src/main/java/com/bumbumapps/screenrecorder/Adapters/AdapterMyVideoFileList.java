@@ -1,6 +1,5 @@
 package com.bumbumapps.screenrecorder.Adapters;
 
-import static com.bumbumapps.screenrecorder.Utills.AdsLoader.mInterstitialAd;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -26,10 +25,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumbumapps.hbrecorder.HBRecorder;
 import com.bumbumapps.screenrecorder.Fragment.FragmentHome;
-import com.bumbumapps.screenrecorder.Utills.AdsLoader;
+import com.bumbumapps.screenrecorder.AdsHelper;
 import com.bumbumapps.screenrecorder.Utills.Globals;
 import com.bumbumapps.screenrecorder.Utills.MyPreference;
-import com.bumbumapps.screenrecorder.Utills.Timers;
 import com.bumptech.glide.Glide;
 
 import com.bumbumapps.screenrecorder.Fragment.FragmentMyRecording;
@@ -141,38 +139,14 @@ public class AdapterMyVideoFileList extends RecyclerView.Adapter<AdapterMyVideoF
         viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (!myPreference.isBoolean()){
-                    if (mInterstitialAd != null && Globals.TIMER_FINISHED) {
-                        mInterstitialAd.show((Activity) viewHolder.itemView.getContext());
-                        mInterstitialAd.setFullScreenContentCallback(new FullScreenContentCallback(){
-                            @Override
-                            public void onAdDismissedFullScreenContent() {
-                                Intent intent = new Intent(Intent.ACTION_VIEW);
-                                Uri uri = Uri.parse(urlpath);
-                                intent.setDataAndType(uri, "video/*");
-                                context.startActivity(intent);
-                                Globals.TIMER_FINISHED = false;
-                                Timers.timer().start();
-                                AdsLoader.displayInterstitial(viewHolder.itemView.getContext());
-                            }
-
-                        });
-                    }else{
-                        Intent intent = new Intent(Intent.ACTION_VIEW);
-                        Uri uri = Uri.parse(urlpath);
-                        intent.setDataAndType(uri, "video/*");
-                        context.startActivity(intent);
-                    }
-
-
-                }else{
-                    Intent intent = new Intent(Intent.ACTION_VIEW);
-                    Uri uri = Uri.parse(urlpath);
-                    intent.setDataAndType(uri, "video/*");
-                    context.startActivity(intent);
+                Context c = viewHolder.itemView.getContext();
+                if (!myPreference.isBoolean() && c instanceof Activity) {
+                    // Capped interstitial (natural break), then open the video.
+                    AdsHelper.showInterstitialIfReady((Activity) c, c.getString(R.string.interstitial_id),
+                            () -> openVideo(context, urlpath));
+                } else {
+                    openVideo(context, urlpath);
                 }
-
-
             }
         });
 
@@ -181,8 +155,31 @@ public class AdapterMyVideoFileList extends RecyclerView.Adapter<AdapterMyVideoF
 
 
 
+    /** content:// Uri for a recording (a bare path or file:// Uri cannot be opened by other apps). */
+    static Uri contentUri(Context context, String filePath) {
+        return androidx.core.content.FileProvider.getUriForFile(context,
+                context.getString(R.string.file_provider_authority), new java.io.File(filePath));
+    }
+
+    public static void openVideo(Context context, String filePath) {
+        try {
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setDataAndType(contentUri(context, filePath), "video/*");
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            context.startActivity(intent);
+        } catch (ActivityNotFoundException | IllegalArgumentException e) {
+            Toast.makeText(context, "Application not found to open this file", Toast.LENGTH_LONG).show();
+        }
+    }
+
     public static void shareVideo(Context context, String filePath) {
-        Uri mainUri = Uri.parse(filePath);
+        Uri mainUri;
+        try {
+            mainUri = contentUri(context, filePath);
+        } catch (IllegalArgumentException e) {
+            Toast.makeText(context, "Application not found to open this file", Toast.LENGTH_LONG).show();
+            return;
+        }
         Intent sharingIntent = new Intent(Intent.ACTION_SEND);
         sharingIntent.setType("video/mp4");
         sharingIntent.putExtra(Intent.EXTRA_STREAM, mainUri);

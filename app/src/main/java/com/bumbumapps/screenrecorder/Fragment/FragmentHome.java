@@ -56,11 +56,10 @@ import com.bumbumapps.screenrecorder.R;
 import com.bumbumapps.screenrecorder.Service.FloatingWidgetService;
 import com.bumbumapps.screenrecorder.Service.FloatingWidgetService2;
 import com.bumbumapps.screenrecorder.Service.ImageRecordService;
-import com.bumbumapps.screenrecorder.Utills.AdsLoader;
+import com.bumbumapps.screenrecorder.AdsHelper;
 import com.bumbumapps.screenrecorder.Utills.Constance;
 import com.bumbumapps.screenrecorder.Utills.Globals;
 import com.bumbumapps.screenrecorder.Utills.MyPreference;
-import com.bumbumapps.screenrecorder.Utills.Timers;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.FullScreenContentCallback;
@@ -84,7 +83,6 @@ import java.util.concurrent.TimeUnit;
 
 import static android.app.Activity.RESULT_OK;
 import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
-import static com.bumbumapps.screenrecorder.Utills.AdsLoader.mInterstitialAd;
 import static com.bumbumapps.screenrecorder.Utills.Globals.PERMISSIONS;
 
 public class FragmentHome extends Fragment implements HBRecorderListener {
@@ -265,17 +263,9 @@ public class FragmentHome extends Fragment implements HBRecorderListener {
 
 
     private void displayInterstitial() {
-        if (mInterstitialAd != null) {
-            mInterstitialAd.show(requireActivity());
-            mInterstitialAd.setFullScreenContentCallback(new FullScreenContentCallback() {
-                @Override
-                public void onAdDismissedFullScreenContent() {
-                    AdsLoader.displayInterstitial(context);
-                    Globals.TIMER_FINISHED = false;
-                    Timers.timer().start();
-                }
-
-            });
+        // Natural break (recording finished): capped, preloaded interstitial.
+        if (isAdded()) {
+            AdsHelper.showInterstitialIfReady(requireActivity(), getString(R.string.interstitial_id));
         }
     }
 

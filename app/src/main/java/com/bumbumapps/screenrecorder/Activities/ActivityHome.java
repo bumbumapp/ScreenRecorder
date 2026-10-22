@@ -26,10 +26,9 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
-import com.bumbumapps.screenrecorder.Utills.AdsLoader;
+import com.bumbumapps.screenrecorder.AdsHelper;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.initialization.InitializationStatus;
 import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
@@ -48,7 +47,7 @@ import java.util.TimerTask;
 public class ActivityHome extends AppCompatActivity implements View.OnClickListener,BottomNavigationView.OnNavigationItemSelectedListener {
 
     Context context;
-    AdView mAdView;
+    android.view.ViewGroup mAdView;
 
     public static ActivityHome instance = null;
     Timer timer;
@@ -82,16 +81,11 @@ public class ActivityHome extends AppCompatActivity implements View.OnClickListe
         check_fragmentname = String.valueOf(getIntent().getStringExtra("check_fragmentname"));
 
         init();
-        AdsLoader.displayInterstitial(this);
-        MobileAds.initialize(this, new OnInitializationCompleteListener() {
-            @Override
-            public void onInitializationComplete(InitializationStatus initializationStatus) {
-            }
+        // UMP consent first; Mobile Ads starts and requests ads only after canRequestAds().
+        AdsHelper.gatherConsent(this, () -> {
+            AdsHelper.loadBanner(this, mAdView, getString(R.string.banner_id));
+            AdsHelper.preloadInterstitial(this, getString(R.string.interstitial_id));
         });
-
-
-        AdRequest adRequest = new AdRequest.Builder().build();
-        mAdView.loadAd(adRequest);
 
 //        for_mInterstitialAd();
         selectedcolor = Color.parseColor("#E416A9");

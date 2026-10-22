@@ -1,16 +1,16 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    package="com.bumbumapps.hbrecorder">
+    xmlns:tools="http://schemas.android.com/tools">
 
     <application
         tools:targetApi="q">
 
         <service android:name="com.bumbumapps.hbrecorder.ScreenRecordService"
-            android:foregroundServiceType="mediaProjection"
+            android:exported="false"
+            android:foregroundServiceType="mediaProjection|microphone"
             tools:targetApi="q" />
 
 
-        <receiver android:name="com.bumbumapps.hbrecorder.NotificationReceiver"/>
+        <receiver android:name="com.bumbumapps.hbrecorder.NotificationReceiver" android:exported="false" />
 
     </application>
 

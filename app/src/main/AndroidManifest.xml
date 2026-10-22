@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    package="com.bumbumapps.screenrecorder">
+    xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO"/>
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO"/>
@@ -20,15 +22,18 @@
         android:icon="@drawable/recorder"
         android:roundIcon="@drawable/recorder"
         android:label="@string/app_name"
-        android:requestLegacyExternalStorage="true"
+        android:enableOnBackInvokedCallback="false"
+        android:name=".ScreenRecorderApp"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name="com.bumbumapps.screenrecorder.Activities.ActivityGalleryPreview">
+        <activity android:name="com.bumbumapps.screenrecorder.Activities.ActivityGalleryPreview"
+            android:exported="false">
 
         </activity>
         <activity
             android:name="com.bumbumapps.screenrecorder.Activities.ActivityMediaProjectionPermission"
+            android:exported="false"
             android:excludeFromRecents="true"
             android:launchMode="singleInstance"
             android:taskAffinity=""
@@ -59,12 +64,12 @@
             </intent-filter>
         </activity>
         <activity android:name="com.bumbumapps.screenrecorder.SettingsActivity"
-            />
+            android:exported="false" />
 
 
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-8444865753152507~1538734101" />
+            android:value="@string/admob_app_id" />
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="com.bumbumapps.screenrecorder.fileprovider"
@@ -76,6 +81,7 @@
         </provider>
         <service
             android:name="com.bumbumapps.screenrecorder.Service.ImageRecordService"
+            android:exported="false"
             android:foregroundServiceType="mediaProjection"
             tools:targetApi="q"
             />

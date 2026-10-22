@@ -1,6 +1,5 @@
 package com.bumbumapps.screenrecorder.Activities;
 
-import static com.bumbumapps.screenrecorder.Utills.Globals.PERMISSIONS;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -25,12 +24,6 @@ public class ActivitySplash extends AppCompatActivity {
 
         context=ActivitySplash.this;
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU){
-            PERMISSIONS = Manifest.permission.READ_MEDIA_VIDEO;
-        }else {
-            PERMISSIONS = Manifest.permission.WRITE_EXTERNAL_STORAGE;
-
-        }
         handler = new Handler();
         handler.postDelayed(new Runnable() {
             @Override
