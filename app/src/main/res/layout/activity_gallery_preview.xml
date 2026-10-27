@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#110E27"
+    android:background="#121317"
     tools:context=".Activities.ActivityGalleryPreview">
     <LinearLayout
         android:layout_width="match_parent"
@@ -86,7 +86,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="56dp"
-            android:background="#221f35"
+            android:background="#131418"
             android:orientation="horizontal">
             <LinearLayout
                 android:id="@+id/ll_shareimage"

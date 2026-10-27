@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:background="#110E27"
+    android:background="#121317"
     android:layout_height="match_parent"
     android:orientation="vertical">
 
@@ -25,7 +25,7 @@
         android:layout_marginTop="30dp"
         app:cardCornerRadius="10dp"
         app:cardElevation="0dp"
-        android:backgroundTint="#1F1A37"
+        android:backgroundTint="#1E2026"
         app:cardUseCompatPadding="true">
 
         <LinearLayout
@@ -39,7 +39,7 @@
                 android:id="@+id/title_qs"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="QUICK SETTINGS"
+                android:text="Quick settings"
                 android:textColor="@color/colorWhite"
                 android:textStyle="bold" />
 
@@ -54,7 +54,7 @@
                     android:id="@+id/hd_button"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:buttonTint="#FFC107"
+                    android:buttonTint="#FF5A5F"
                     android:checked="true"
                     android:text="@string/high_definition"
                     android:textColor="@color/colorWhite" />
@@ -63,7 +63,7 @@
                     android:id="@+id/sd_button"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:buttonTint="#FFC107"
+                    android:buttonTint="#FF5A5F"
                     android:text="@string/standard_definition"
                     android:textColor="@color/colorWhite" />
 
@@ -106,7 +106,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="15dp"
-                        android:text="USE CUSTOM SETTINGS"
+                        android:text="Use custom settings"
                         android:textColor="@color/white"
                         android:textStyle="bold" />
                 </LinearLayout>
@@ -156,7 +156,7 @@
                     android:layout_width="30dp"
                     android:layout_height="30dp"
                     android:src="@drawable/ic_floating_settings"
-                    android:tint="#FFC107" />
+                    android:tint="#FF5A5F" />
             </LinearLayout>
 
             <LinearLayout
@@ -170,7 +170,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
-                    android:text="FLOATING BUTTON CONTROLS"
+                    android:text="Floating button controls"
                     android:textColor="@color/white"
                     android:textStyle="bold" />
 
@@ -224,7 +224,7 @@
                     android:layout_width="30dp"
                     android:layout_height="30dp"
                     android:src="@drawable/ic_audio_recording"
-                    android:tint="#FFC107" />
+                    android:tint="#FF5A5F" />
             </LinearLayout>
 
             <LinearLayout
@@ -238,7 +238,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
-                    android:text="RECORD AUDIO"
+                    android:text="Record audio"
                     android:textColor="@color/white"
                     android:textStyle="bold" />
 
@@ -290,7 +290,7 @@
                 android:focusable="true"
                 android:src="@drawable/ic_recode"
                 android:visibility="visible"
-                app:backgroundTint="#FFC107"
+                app:backgroundTint="#FF5A5F"
                 app:layout_anchorGravity="right" />
         </RelativeLayout>
     </LinearLayout>
