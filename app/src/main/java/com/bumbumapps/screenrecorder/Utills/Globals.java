@@ -11,9 +11,13 @@ public class Globals {
      */
     public static final String PERMISSIONS = storagePermissionFor(Build.VERSION.SDK_INT);
 
+    /**
+     * Returns null on Android 13+: recordings are inserted through MediaStore and owned by the
+     * app, so it can list and play them without READ_MEDIA_* (Play photo and video policy).
+     */
     public static String storagePermissionFor(int sdkInt) {
         if (sdkInt >= 33) {
-            return Manifest.permission.READ_MEDIA_VIDEO;
+            return null;
         } else if (sdkInt >= 29) {
             return Manifest.permission.READ_EXTERNAL_STORAGE;
         }

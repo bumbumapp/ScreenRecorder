@@ -685,6 +685,9 @@ public class FragmentHome extends Fragment implements HBRecorderListener {
 
     //Check if permissions was granted
     private boolean checkSelfPermission(String permission, int requestCode) {
+        if (permission == null) {
+            return true;
+        }
         if (ContextCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(getActivity(), new String[]{permission}, requestCode);
             return false;
@@ -985,22 +988,8 @@ public class FragmentHome extends Fragment implements HBRecorderListener {
     }
 
     public void getpermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if ((ContextCompat.checkSelfPermission(context,
-                    PERMISSIONS) != PackageManager.PERMISSION_GRANTED) && (ContextCompat.checkSelfPermission(context,
-                    Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)) {
-                if ((ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
-                        PERMISSIONS)) && (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
-                        Manifest.permission.READ_EXTERNAL_STORAGE))) {
-
-                } else {
-                    ActivityCompat.requestPermissions(getActivity(),
-                            new String[]{PERMISSIONS, Manifest.permission.READ_EXTERNAL_STORAGE},
-                            REQUEST_PERMISSIONS);
-                }
-            } else {
-                createscreenshotfolder();
-            }
+        if (PERMISSIONS == null) {
+            createscreenshotfolder();
         }else{
             if ((ContextCompat.checkSelfPermission(context,
                     PERMISSIONS) != PackageManager.PERMISSION_GRANTED)) {
