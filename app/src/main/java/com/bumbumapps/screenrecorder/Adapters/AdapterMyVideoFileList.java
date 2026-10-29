@@ -7,6 +7,8 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.util.Log;
@@ -29,6 +31,12 @@ import com.bumbumapps.screenrecorder.AdsHelper;
 import com.bumbumapps.screenrecorder.Utills.Globals;
 import com.bumbumapps.screenrecorder.Utills.MyPreference;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.RequestOptions;
+import com.bumptech.glide.request.target.Target;
+import com.bumptech.glide.signature.ObjectKey;
 
 import com.bumbumapps.screenrecorder.Fragment.FragmentMyRecording;
 import com.bumbumapps.screenrecorder.R;
@@ -79,6 +87,7 @@ public class AdapterMyVideoFileList extends RecyclerView.Adapter<AdapterMyVideoF
         final String urlpath = fileItem.getAbsolutePath();
         final String filename = fileItem.getName();
         long length = fileItem.length();
+        long durationMs = 0;
         if (length < 1024){
             fileItem.delete();
         } else {
@@ -88,14 +97,33 @@ public class AdapterMyVideoFileList extends RecyclerView.Adapter<AdapterMyVideoF
             if(time!=null)
             {
                 long durationtime = Long.parseLong(time);
+                durationMs = durationtime;
                 viewHolder.tv_fileduration.setText(duration(durationtime));
             }
         }
        viewHolder.tv_filesize.setText(size(length));
         viewHolder.tv_fileName.setText(filename);
+        // Glide's default frame (-1, "representative") comes back empty for some short HBRecorder
+        // files on Android 15+, leaving a blank tile; ask for a real frame and fall back to the
+        // closest decodable one
+        final ImageView thumb = viewHolder.iv_fileimage;
         Glide.with(context)
                 .load(fileItem.getPath())
-                .into(viewHolder.iv_fileimage);
+                .apply(RequestOptions.frameOf(Globals.thumbnailFrameUs(durationMs)))
+                .signature(new ObjectKey(fileItem.lastModified() + ":" + fileItem.length()))
+                .listener(new RequestListener<Drawable>() {
+                    @Override
+                    public boolean onLoadFailed(GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                        thumb.post(() -> thumb.setImageBitmap(closestFrame(urlpath)));
+                        return true;
+                    }
+
+                    @Override
+                    public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                        return false;
+                    }
+                })
+                .into(thumb);
         /*try {
             String extension = fileItem.getName().substring(fileItem.getName().lastIndexOf("."));
             if (extension.equals(".mp4")) {
@@ -198,6 +226,18 @@ public class AdapterMyVideoFileList extends RecyclerView.Adapter<AdapterMyVideoF
                 TimeUnit.MILLISECONDS.toSeconds(seconds) -
                         TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(seconds)));
     }
+    private static Bitmap closestFrame(String path) {
+        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+        try {
+            retriever.setDataSource(path);
+            return retriever.getFrameAtTime(0, MediaMetadataRetriever.OPTION_CLOSEST);
+        } catch (RuntimeException e) {
+            return null;
+        } finally {
+            try { retriever.release(); } catch (Exception ignored) { }
+        }
+    }
+
     public static String size(long size) {
         if (size <= 0)
             return "0";

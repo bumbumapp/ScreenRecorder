@@ -188,15 +188,12 @@ public class FragmentHome extends Fragment implements HBRecorderListener {
             //When the user returns to the application, some UI changes might be necessary,
             //check if recording is in progress and make changes accordingly
             if (hbRecorder.isBusyRecording()) {
-                // Toast.makeText(context, "recording stop click again", Toast.LENGTH_LONG).show();
-                //startbtn.setText(R.string.stop_recording);
-                hbRecorder.stopScreenRecording();
-                mediarunning = false;
-                myPreference.putBoolean(false);
-                RunNotification();
-                Constance.notificationrecordclick = false;
-                //  startbtn.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_close));
-                startbtn.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_recode));
+                // Keep recording: this used to stop it whenever Home was rebuilt (switching tabs,
+                // reopening the app), and tapping record right after cut the file before it was
+                // finalized, leaving an unplayable recording with a blank thumbnail
+                mediarunning = true;
+                myPreference.putBoolean(true);
+                startbtn.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_close));
             }
         }
 
@@ -324,7 +321,12 @@ public class FragmentHome extends Fragment implements HBRecorderListener {
                         RunNotification();
                         Constance.notificationrecordclick = false;
                         Log.d("checkclick", "ifhome");
-                        startbtn.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_close));
+                        startbtn.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_recode));
+                        // back to the idle bubble; the stop bubble stayed on screen after stopping here
+                        if (Constance.isfloatingswitchEnabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
+                                && Settings.canDrawOverlays(context)) {
+                            startFloatingWidgetService();
+                        }
 
                     }
                     //else start recording
@@ -370,11 +372,14 @@ public class FragmentHome extends Fragment implements HBRecorderListener {
 
     //Check if audio should be recorded
     private void setRecordAudioCheckBoxListener() {
+        isAudioEnabled = myPreference.isRecordAudio();
+        recordAudioCheckBox.setChecked(isAudioEnabled);
         recordAudioCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
                 //Enable/Disable audio
                 isAudioEnabled = isChecked;
+                myPreference.setRecordAudio(isChecked);
             }
         });
     }
@@ -951,7 +956,12 @@ public class FragmentHome extends Fragment implements HBRecorderListener {
     private void startFloatingWidgetService() {
         Constance.isfloatingswitchEnabled = true;
         floating_settings_switch.setChecked(Constance.isfloatingswitchEnabled);
-        context.startService(new Intent(context, FloatingWidgetService.class));
+        // Only one bubble at a time: reopening the app mid-recording used to add the idle bubble
+        // next to the recording one
+        Class<?> show = Globals.floatingWidgetFor(myPreference.isBoolean());
+        Class<?> hide = show == FloatingWidgetService.class ? FloatingWidgetService2.class : FloatingWidgetService.class;
+        context.stopService(new Intent(context, hide));
+        context.startService(new Intent(context, show));
         // context.startActivity(new Intent(context, ActivityFloatingWidget.class));
         // finish();
     }

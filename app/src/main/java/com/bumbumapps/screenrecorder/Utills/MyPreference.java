@@ -24,4 +24,13 @@ public class MyPreference {
         return sharedPreferences.getBoolean("busy",false);
     }
 
+    // Home screen "Record audio" switch; remembered so it shows the user's last choice after reopening
+    public void setRecordAudio(boolean enabled){
+        sharedPreferences.edit().putBoolean("record_audio",enabled).apply();
+    }
+
+    public boolean isRecordAudio(){
+        return sharedPreferences.getBoolean("record_audio",true);
+    }
+
 }

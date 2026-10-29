@@ -1,7 +1,11 @@
 package com.bumbumapps.screenrecorder.Fragment;
 
 import android.content.Context;
+import android.database.ContentObserver;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
@@ -86,14 +90,35 @@ public class FragmentMyRecording extends Fragment {
 
 
     }
-    @Override
-    public void onResume() {
-        super.onResume();
+    // A recording is still being finalized for a few seconds after stop; reload when MediaStore
+    // reports it done, otherwise the newest entry keeps a blank thumbnail and no duration
+    private final ContentObserver videosChanged = new ContentObserver(new Handler(Looper.getMainLooper())) {
+        @Override
+        public void onChange(boolean selfChange) {
+            if (isResumed()) refresh();
+        }
+    };
+
+    private void refresh() {
         getAllFiles();
         if (fileArrayList.size() == 0) {
             rl_videonotfound.setVisibility(View.VISIBLE);
         } else {
             rl_videonotfound.setVisibility(View.GONE);
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        refresh();
+        context.getContentResolver().registerContentObserver(
+                MediaStore.Video.Media.EXTERNAL_CONTENT_URI, true, videosChanged);
+    }
+
+    @Override
+    public void onPause() {
+        context.getContentResolver().unregisterContentObserver(videosChanged);
+        super.onPause();
     }
 }
