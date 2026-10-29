@@ -13,8 +13,8 @@ android {
         applicationId "com.bumbumapps.screenrecorder"
         minSdk 24
         targetSdk 36
-        versionCode 14
-        versionName "1.2.1"
+        versionCode 15
+        versionName "1.2.2"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildFeatures {
@@ -33,7 +33,8 @@ android {
             resValue 'string', 'admob_app_id', 'ca-app-pub-8444865753152507~1538734101'
             resValue 'string', 'banner_id', 'ca-app-pub-8444865753152507/9095173383'
             resValue 'string', 'interstitial_id', 'ca-app-pub-8444865753152507/9775482627'
-            minifyEnabled false
+            minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }

@@ -19,3 +19,14 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Release is minified (vc15) to keep the AAB small.
+-keepattributes SourceFile,LineNumberTable,Signature,*Annotation*
+-renamesourcefileattribute SourceFile
+
+# Screen recording library: service, receivers and listener callbacks.
+-keep class com.bumbumapps.hbrecorder.** { *; }
+
+# Views and fragments referenced from XML layouts / menus.
+-keep class com.bumbumapps.screenrecorder.Fragment.** { *; }
+-keep class * extends android.view.View { public <init>(...); }
