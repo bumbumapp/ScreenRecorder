@@ -129,7 +129,13 @@ public class ActivityHome extends AppCompatActivity implements View.OnClickListe
         fragmentTransaction.replace(R.id.main_framelayout, fragment);
         fragmentTransaction.hide(fragment);
         fragmentTransaction.show(fragment);
-        fragmentTransaction.commit();
+        // onNewIntent (notification "record" action) can arrive while the activity is stopped;
+        // a plain commit() then throws "Can not perform this action after onSaveInstanceState".
+        if (fragmentManager.isStateSaved()) {
+            fragmentTransaction.commitAllowingStateLoss();
+        } else {
+            fragmentTransaction.commit();
+        }
     }
 
 
@@ -200,13 +206,14 @@ public class ActivityHome extends AppCompatActivity implements View.OnClickListe
 
     @Override
     protected void onNewIntent(Intent intent) {
-        Log.d("mxmxmxm", "onnewintent");
-        checkAction(intent);
         super.onNewIntent(intent);
+        setIntent(intent);
+        checkAction(intent);
     }
 
     private void checkAction(Intent intent) {
         String action = intent.getAction();
+        if (action == null) return;
         switch (action) {
             case "record_intent":
                 Constance.notificationrecordclick=true;
