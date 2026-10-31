@@ -237,9 +237,12 @@ public class FragmentHome extends Fragment implements HBRecorderListener {
         }
 
         if (Constance.notificationrecordclick) {
-            custom_settings_switch.setChecked(true);
-            performclickstartbtn();
-
+            // One-shot request: consume it so rebuilding Home later doesn't toggle recording again.
+            Constance.notificationrecordclick = false;
+            if (Globals.autoStartRecording(true, hbRecorder.isBusyRecording())) {
+                custom_settings_switch.setChecked(true);
+                performclickstartbtn();
+            }
         } else {
             Log.d("mzmzmzm", "Not notification record clciked");
         }

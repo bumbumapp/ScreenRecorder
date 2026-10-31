@@ -29,4 +29,12 @@ public class GlobalsTest {
         assertEquals(FloatingWidgetService2.class, Globals.floatingWidgetFor(true));
         assertEquals(FloatingWidgetService.class, Globals.floatingWidgetFor(false));
     }
+
+    // #103: rebuilding Home during a notification-started recording stopped it.
+    @Test
+    public void notificationRecordNeverTogglesARunningRecording() {
+        org.junit.Assert.assertTrue(Globals.autoStartRecording(true, false));
+        org.junit.Assert.assertFalse(Globals.autoStartRecording(true, true));
+        org.junit.Assert.assertFalse(Globals.autoStartRecording(false, false));
+    }
 }

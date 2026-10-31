@@ -33,6 +33,15 @@ public class Globals {
         return Math.min(1000L, durationMs / 2) * 1000L;
     }
 
+    /**
+     * Whether a freshly created Home screen should start recording because the user tapped
+     * "record" in the notification/bubble. Never while a recording runs: that used to stop it as
+     * soon as Home was rebuilt (tab switch), and the next tap opened a new share-screen prompt.
+     */
+    public static boolean autoStartRecording(boolean recordRequested, boolean busyRecording) {
+        return recordRequested && !busyRecording;
+    }
+
     /** Floating bubble to show: the stop/pause bubble while recording, the idle record bubble otherwise. */
     public static Class<?> floatingWidgetFor(boolean recording) {
         return recording ? FloatingWidgetService2.class : FloatingWidgetService.class;
