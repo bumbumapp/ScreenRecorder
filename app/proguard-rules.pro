@@ -30,3 +30,8 @@
 # Views and fragments referenced from XML layouts / menus.
 -keep class com.bumbumapps.screenrecorder.Fragment.** { *; }
 -keep class * extends android.view.View { public <init>(...); }
+
+# Huawei Ads (hms flavor)
+-keep class com.huawei.openalliance.ad.** { *; }
+-keep class com.huawei.hms.ads.** { *; }
+-dontwarn com.huawei.**

@@ -40,10 +40,6 @@ import com.bumptech.glide.signature.ObjectKey;
 
 import com.bumbumapps.screenrecorder.Fragment.FragmentMyRecording;
 import com.bumbumapps.screenrecorder.R;
-import com.google.android.gms.ads.AdListener;
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.FullScreenContentCallback;
-import com.google.android.gms.ads.interstitial.InterstitialAd;
 
 
 import java.io.File;

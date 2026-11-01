@@ -60,11 +60,6 @@ import com.bumbumapps.screenrecorder.AdsHelper;
 import com.bumbumapps.screenrecorder.Utills.Constance;
 import com.bumbumapps.screenrecorder.Utills.Globals;
 import com.bumbumapps.screenrecorder.Utills.MyPreference;
-import com.google.android.gms.ads.AdListener;
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.FullScreenContentCallback;
-import com.google.android.gms.ads.interstitial.InterstitialAd;
-import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
 
 
 import java.io.ByteArrayOutputStream;
