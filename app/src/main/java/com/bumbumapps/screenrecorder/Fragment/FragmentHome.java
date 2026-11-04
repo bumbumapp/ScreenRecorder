@@ -149,6 +149,7 @@ public class FragmentHome extends Fragment implements HBRecorderListener {
         setOnClickListeners();
         setRadioGroupCheckListener();
         setRecordAudioCheckBoxListener();
+        setupCountdownChips(view);
         RunNotification();
         getpermission();
 
@@ -735,30 +736,125 @@ public class FragmentHome extends Fragment implements HBRecorderListener {
         }
     }
 
+    private void beginRecording(Intent data, int resultCode) {
+        //Set file path or Uri depending on SDK version
+        setOutputPath();
+        //Start screen recording
+        hbRecorder.startScreenRecording(data, resultCode, getActivity());
+        showLongToast("Recording Start...");
+        mediarunning = true;
+        myPreference.putBoolean(true);
+        RunNotification();
+        Constance.notificationrecordclick = false;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (Settings.canDrawOverlays(context)) {
+                context.stopService(new Intent(context, FloatingWidgetService.class));
+                context.startService(new Intent(context, FloatingWidgetService2.class));
+            }
+        }
+        startbtn.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_close));
+    }
+
+    private android.os.CountDownTimer countdownTimer;
+    private android.app.AlertDialog countdownDialog;
+
+    /** Shows "starts in N" so the user can switch to the screen to record, then runs onDone. */
+    private void runCountdown(final int seconds, final Runnable onDone, final Runnable onCancel) {
+        cancelCountdown();
+        final android.widget.TextView text = new android.widget.TextView(context);
+        text.setTextSize(22);
+        text.setGravity(android.view.Gravity.CENTER);
+        text.setPadding(40, 60, 40, 40);
+        text.setText(getString(R.string.countdown_message, seconds));
+        countdownDialog = new android.app.AlertDialog.Builder(new android.view.ContextThemeWrapper(context, R.style.AlertDialogCustom))
+                .setView(text)
+                .setCancelable(false)
+                .setNegativeButton(R.string.action_cancel, (d, w) -> {
+                    cancelCountdown();
+                    onCancel.run();
+                })
+                .create();
+        countdownDialog.show();
+        countdownTimer = new android.os.CountDownTimer(seconds * 1000L, 250) {
+            int shown = seconds;
+
+            @Override
+            public void onTick(long ms) {
+                int left = (int) Math.ceil(ms / 1000.0);
+                if (left != shown) {
+                    shown = left;
+                    text.setText(getString(R.string.countdown_message, left));
+                }
+            }
+
+            @Override
+            public void onFinish() {
+                if (countdownDialog != null) countdownDialog.dismiss();
+                countdownDialog = null;
+                countdownTimer = null;
+                onDone.run();
+            }
+        }.start();
+    }
+
+    private void cancelCountdown() {
+        if (countdownTimer != null) countdownTimer.cancel();
+        countdownTimer = null;
+        if (countdownDialog != null && countdownDialog.isShowing()) countdownDialog.dismiss();
+        countdownDialog = null;
+    }
+
+    private void setupCountdownChips(View root) {
+        final android.widget.LinearLayout row = root.findViewById(R.id.ll_countdown);
+        final float d = getResources().getDisplayMetrics().density;
+        final int[] options = com.bumbumapps.screenrecorder.Utills.RecordingTools.COUNTDOWN_OPTIONS;
+        for (final int sec : options) {
+            android.widget.TextView chip = new android.widget.TextView(context);
+            chip.setText(sec == 0 ? getString(R.string.countdown_off) : getString(R.string.countdown_seconds, sec));
+            chip.setGravity(android.view.Gravity.CENTER);
+            chip.setTag(sec);
+            chip.setMinHeight((int) (40 * d));
+            android.widget.LinearLayout.LayoutParams lp = new android.widget.LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
+            lp.setMargins((int) (3 * d), 0, (int) (3 * d), 0);
+            chip.setLayoutParams(lp);
+            chip.setOnClickListener(v -> {
+                myPreference.setCountdownSeconds(sec);
+                markCountdownChips(row);
+            });
+            row.addView(chip);
+        }
+        markCountdownChips(row);
+    }
+
+    private void markCountdownChips(android.widget.LinearLayout row) {
+        int current = myPreference.getCountdownSeconds();
+        for (int i = 0; i < row.getChildCount(); i++) {
+            android.widget.TextView c = (android.widget.TextView) row.getChildAt(i);
+            boolean on = ((Integer) c.getTag()) == current;
+            c.setBackgroundColor(on ? 0xFFFF5A5F : 0xFF2A2C33);
+            c.setTextColor(0xFFFFFFFF);
+        }
+    }
+
+    @Override
+    public void onDestroyView() {
+        cancelCountdown();
+        super.onDestroyView();
+    }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             if (requestCode == SCREEN_RECORD_REQUEST_CODE) {
                 if (resultCode == RESULT_OK) {
-                    //Set file path or Uri depending on SDK version
-                    setOutputPath();
-                    //Start screen recording
-                    hbRecorder.startScreenRecording(data, resultCode, getActivity());
-                    showLongToast("Recording Start...");
-                    mediarunning = true;
-                    myPreference.putBoolean(true);
-                    RunNotification();
-                    Constance.notificationrecordclick = false;
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        if (Settings.canDrawOverlays(context)) {
-                            context.stopService(new Intent(context, FloatingWidgetService.class));
-                            context.startService(new Intent(context, FloatingWidgetService2.class));
-                        }
+                    final int seconds = myPreference.getCountdownSeconds();
+                    if (seconds > 0) {
+                        runCountdown(seconds, () -> beginRecording(data, resultCode),
+                                () -> startbtn.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_recode)));
+                    } else {
+                        beginRecording(data, resultCode);
                     }
-
-                    startbtn.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_close));
-
                 } else {
                     Constance.notificationrecordclick = false;
                     startbtn.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_recode));

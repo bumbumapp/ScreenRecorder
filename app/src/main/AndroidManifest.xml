@@ -59,6 +59,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name="com.bumbumapps.screenrecorder.Activities.ActivityVideoTools"
+            android:exported="false"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
         <activity android:name="com.bumbumapps.screenrecorder.SettingsActivity"
             android:exported="false" />
         <provider

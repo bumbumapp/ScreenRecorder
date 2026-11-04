@@ -54,15 +54,24 @@ import java.util.concurrent.TimeUnit;
 public class AdapterMyVideoFileList extends RecyclerView.Adapter<AdapterMyVideoFileList.ViewHolder> {
     private Context context;
     private ArrayList<File> fileArrayList;
-    File fileItem;
+
 
     private MyPreference myPreference;
+
+    private Runnable onDataChanged;
 
     public AdapterMyVideoFileList(Context context, ArrayList<File> files) {
         this.context = context;
         this.fileArrayList = files;
+    }
 
+    /** Called after a file was renamed or deleted so the screen can reload its list and summary. */
+    public void setOnDataChanged(Runnable r) {
+        this.onDataChanged = r;
+    }
 
+    private void changed() {
+        if (onDataChanged != null) onDataChanged.run();
     }
 
     @NonNull
@@ -76,7 +85,7 @@ public class AdapterMyVideoFileList extends RecyclerView.Adapter<AdapterMyVideoF
 
     @Override
     public void onBindViewHolder(@NonNull final AdapterMyVideoFileList.ViewHolder viewHolder, final int position) {
-        fileItem = fileArrayList.get(position);
+        final File fileItem = fileArrayList.get(position);
        myPreference=new MyPreference(context);
 
 
@@ -135,28 +144,29 @@ public class AdapterMyVideoFileList extends RecyclerView.Adapter<AdapterMyVideoF
         viewHolder.iv_popupmenu.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                final int pos = viewHolder.getBindingAdapterPosition();
+                if (pos == RecyclerView.NO_POSITION || pos >= fileArrayList.size()) return;
+                final File target = fileArrayList.get(pos);
                 final PopupMenu popupMenu = new PopupMenu(context, viewHolder.iv_popupmenu);
-                popupMenu.getMenuInflater().inflate(R.menu.popup_menu,popupMenu.getMenu());
+                popupMenu.getMenuInflater().inflate(R.menu.popup_menu, popupMenu.getMenu());
                 popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     @Override
                     public boolean onMenuItemClick(MenuItem item) {
-                        switch (item.getItemId()) {
-                            case R.id.item_delete:
-                                deleteFile(position);
-                                return true;
-
-                            case R.id.item_share:
-                                shareVideo(context,urlpath);
-                                return true;
-
+                        int id = item.getItemId();
+                        if (id == R.id.item_delete) {
+                            deleteFile(target);
+                        } else if (id == R.id.item_share) {
+                            shareVideo(context, target.getAbsolutePath());
+                        } else if (id == R.id.item_edit) {
+                            com.bumbumapps.screenrecorder.Activities.ActivityVideoTools.start(context, target.getAbsolutePath());
+                        } else if (id == R.id.item_rename) {
+                            renameFile(target);
+                        } else if (id == R.id.item_details) {
+                            showDetails(target);
                         }
-
-                        popupMenu.dismiss();
-
                         return true;
                     }
                 });
-
                 popupMenu.show();
             }
         });
@@ -164,6 +174,9 @@ public class AdapterMyVideoFileList extends RecyclerView.Adapter<AdapterMyVideoF
             @Override
             public void onClick(View view) {
                 Context c = viewHolder.itemView.getContext();
+                int clicked = viewHolder.getBindingAdapterPosition();
+                if (clicked == RecyclerView.NO_POSITION || clicked >= fileArrayList.size()) return;
+                final String urlpath = fileArrayList.get(clicked).getAbsolutePath();
                 if (!myPreference.isBoolean() && c instanceof Activity) {
                     // Capped interstitial (natural break), then open the video.
                     AdsHelper.showInterstitialIfReady((Activity) c, c.getString(R.string.interstitial_id),
@@ -261,33 +274,83 @@ public class AdapterMyVideoFileList extends RecyclerView.Adapter<AdapterMyVideoF
 
         }
     }
-    private void deleteFile(final int position) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(context,R.style.AlertDialogCustom));
+    private void deleteFile(final File target) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(context, R.style.AlertDialogCustom));
         builder.setTitle("Confirm Delete ?");
         builder.setMessage("Are you sure you want delete this !");
         builder.setIcon(R.drawable.ic_delete);
-        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                fileItem.delete();
-                Log.d("aaaaaaa",""+position);
-                fileArrayList.remove(position);
-                notifyItemRemoved(position);
-                notifyItemRangeChanged(position, fileArrayList.size());
-                if (fileArrayList.size() == 0) {
-                   FragmentMyRecording.rl_videonotfound.setVisibility(View.VISIBLE);
-                }
-            }
+        builder.setPositiveButton("Yes", (dialogInterface, i) -> {
+            //noinspection ResultOfMethodCallIgnored
+            target.delete();
+            changed();
         });
-        builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-
-
-            }
-        });
-        AlertDialog alertDialog = builder.create();
-        alertDialog.show();
+        builder.setNegativeButton("No", null);
+        builder.create().show();
     }
 
+    private void renameFile(final File target) {
+        final android.widget.EditText input = new android.widget.EditText(new ContextThemeWrapper(context, R.style.AlertDialogCustom));
+        String current = target.getName();
+        if (current.toLowerCase(java.util.Locale.ROOT).endsWith(".mp4")) current = current.substring(0, current.length() - 4);
+        input.setText(current);
+        input.setSelectAllOnFocus(true);
+        input.setSingleLine(true);
+        AlertDialog dialog = new AlertDialog.Builder(new ContextThemeWrapper(context, R.style.AlertDialogCustom))
+                .setTitle(R.string.rename_title)
+                .setView(input)
+                .setPositiveButton(R.string.action_save, null)
+                .setNegativeButton(R.string.action_cancel, null)
+                .create();
+        dialog.setOnShowListener(d -> dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+            String name = com.bumbumapps.screenrecorder.Utills.RecordingTools.sanitizeFileName(input.getText().toString(), "mp4");
+            if (name == null) {
+                input.setError(context.getString(R.string.rename_invalid));
+                return;
+            }
+            if (name.equals(target.getName())) {
+                dialog.dismiss();
+                return;
+            }
+            File sibling = new File(target.getParentFile(), name);
+            if (sibling.exists()) {
+                input.setError(context.getString(R.string.rename_exists));
+                return;
+            }
+            if (com.bumbumapps.screenrecorder.Utills.MediaSaver.rename(context, target, name)) {
+                dialog.dismiss();
+                changed();
+            } else {
+                Toast.makeText(context, R.string.rename_failed, Toast.LENGTH_LONG).show();
+            }
+        }));
+        dialog.show();
+    }
+
+    private void showDetails(File target) {
+        String duration = "-";
+        String resolution = "-";
+        MediaMetadataRetriever r = new MediaMetadataRetriever();
+        try {
+            r.setDataSource(target.getAbsolutePath());
+            String d = r.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+            if (d != null) duration = com.bumbumapps.screenrecorder.Utills.RecordingTools.formatDuration(Long.parseLong(d));
+            String w = r.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH);
+            String h = r.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT);
+            if (w != null && h != null) resolution = w + " x " + h;
+        } catch (RuntimeException ignored) {
+        } finally {
+            try {
+                r.release();
+            } catch (Exception ignored) {
+            }
+        }
+        String saved = java.text.DateFormat.getDateTimeInstance().format(new java.util.Date(target.lastModified()));
+        String body = context.getString(R.string.details_body, target.getName(),
+                com.bumbumapps.screenrecorder.Utills.RecordingTools.formatSize(target.length()), duration, resolution, saved);
+        new AlertDialog.Builder(new ContextThemeWrapper(context, R.style.AlertDialogCustom))
+                .setTitle(R.string.details_title)
+                .setMessage(body)
+                .setPositiveButton(android.R.string.ok, null)
+                .show();
+    }
 }

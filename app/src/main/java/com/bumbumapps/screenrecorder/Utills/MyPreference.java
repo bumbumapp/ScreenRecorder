@@ -33,4 +33,13 @@ public class MyPreference {
         return sharedPreferences.getBoolean("record_audio",true);
     }
 
+    // Seconds to count down before an in-app recording starts (0 = off)
+    public int getCountdownSeconds(){
+        return RecordingTools.countdownOrOff(sharedPreferences.getInt("countdown_seconds",0));
+    }
+
+    public void setCountdownSeconds(int seconds){
+        sharedPreferences.edit().putInt("countdown_seconds",RecordingTools.countdownOrOff(seconds)).apply();
+    }
+
 }
